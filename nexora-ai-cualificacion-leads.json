@@ -1,0 +1,339 @@
+{
+  "name": "NEXORA AI - Cualificación de Leads",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Solicitud de diagnóstico IA",
+        "formDescription": "Cuéntanos qué proceso o problema quieres mejorar y estudiaremos cómo podemos ayudarte.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nombre",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Telefono"
+            },
+            {
+              "fieldLabel": "Empresa"
+            },
+            {
+              "fieldLabel": "Asunto",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Mensaje",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -624,
+        -144
+      ],
+      "id": "b75e4737-350e-4b9d-8fca-a99bf141e7cf",
+      "name": "On form submission",
+      "webhookId": "ae4193fe-bf10-42da-9ebb-5d53590f90b2"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "models/gemini-3-flash-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres el sistema de análisis de leads de una consultora especializada en soluciones de inteligencia artificial y automatización para empresas.\n\nTu tarea es analizar la solicitud recibida y determinar si constituye una oportunidad comercial para nuestra empresa.\n\nUna oportunidad es una solicitud en la que el problema descrito puede abordarse razonablemente mediante automatización, IA, integración de herramientas, chatbot u otra solución tecnológica que nuestra consultora pueda implementar.\n\nAnaliza los siguientes datos del potencial cliente:\n\nNombre: {{ $json.Nombre }}\nEmail: {{ $json.Email }}\nTeléfono: {{ $json.Telefono }}\nEmpresa: {{ $json.Empresa }}\nAsunto: {{ $json.Asunto }}\nMensaje: {{ $json.Mensaje }}\n\nDetermina:\n\n1. es_oportunidad: true si consideras que existe una oportunidad comercial real que nuestra consultora podría abordar; false si no.\n2. tipo_oportunidad: selecciona exclusivamente una de las siguientes categorías:\n\n- Automatización de procesos\n- Atención y comunicación con clientes\n- Asistentes de voz / llamadas\n- Agentes de IA\n- Ventas y cualificación de leads\n- Gestión del conocimiento / RAG\n- Integraciones y sistemas\n\nDebes elegir la categoría que mejor represente el problema principal descrito por el cliente.\n\nNo inventes nuevas categorías ni combines varias categorías en un mismo valor.\n3. prioridad: alta, media o baja, según el potencial de la oportunidad y la urgencia o impacto del problema descrito.\n4. problema_detectado: resume brevemente el problema empresarial que el cliente está intentando solucionar.\n5. respuesta_cliente: redacta una primera respuesta profesional, cercana y breve para el potencial cliente. La respuesta debe demostrar que hemos entendido su problema y proponer estudiar el caso con mayor detalle, sin prometer todavía una solución concreta.\n6. solucion_sugerida: propone brevemente qué tipo de solución podría abordar el problema identificado. Puedes ser específico, por ejemplo: \"asistente de llamadas con IA conectado al calendario\", \"automatización de clasificación y respuesta de emails\" o \"chatbot para resolver consultas frecuentes\". No presentes la solución como definitiva ni prometas que resolverá el problema; debe entenderse como una hipótesis inicial que deberá validarse posteriormente.\n\nNo inventes información que el cliente no haya proporcionado.\nSi la información es insuficiente para determinar una oportunidad con confianza, utiliza false y explica brevemente el motivo en problema_detectado.\n\nDevuelve exclusivamente un objeto JSON válido con esta estructura:\n\n{\n  \"es_oportunidad\": true,\n  \"tipo_oportunidad\": \"automatización\",\n  \"prioridad\": \"alta\",\n  \"problema_detectado\": \"Descripción breve del problema\", \"solucion_sugerida\": \"Asistente de llamadas con IA para atender y clasificar llamadas entrantes\"\n  \"respuesta_cliente\": \"Respuesta profesional al cliente\"\n}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        -144
+      ],
+      "id": "dad6a296-d71f-46b4-a0be-0a7ed826161a",
+      "name": "Message a model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OENNUPyciBxSI7ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "37d9ede3-da1a-453d-a4ac-245e8421a60d",
+              "leftValue": "={{ $json.es_oportunidad }}",
+              "rightValue": "=true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        176,
+        -144
+      ],
+      "id": "116e3589-85f7-4281-9b03-a26b017dccfd",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "643789d6-a888-4970-8f7a-5e15e0862c72",
+              "name": "Destinatario",
+              "value": "={{ $('On form submission').first().json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "86035bb5-ac8e-4cba-b767-047686c4435c",
+              "name": "Asunto",
+              "value": "Hemos recibido tu consulta",
+              "type": "string"
+            },
+            {
+              "id": "21defa55-ea72-4f7a-8eea-f24fb34c4b8c",
+              "name": "Cuerpo",
+              "value": "={{ $json.respuesta_cliente }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        384,
+        -320
+      ],
+      "id": "063969b5-ba1b-444b-bad0-5fde856cb066",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nfor (const item of items) {\n  const geminiText = item.json.content.parts[0].text;\n\n  const parsed = JSON.parse(geminiText);\n\n  Object.assign(item.json, parsed);\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        -144
+      ],
+      "id": "0e4940c8-e0c9-42a4-bbe3-a9b205534e8c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Destinatario }}",
+        "subject": "={{ $json.Asunto }}",
+        "message": "=\n<div style=\"margin:0;padding:32px 12px;background:#F3F6FA;font-family:Arial,Helvetica,sans-serif;color:#263445;\">\n  <div style=\"max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;\">\n\n    <div style=\"background:#142D4E;padding:28px 32px;\">\n      <p style=\"margin:0;color:#8FC2FF;font-size:12px;font-weight:bold;letter-spacing:2px;\">NEXORA AI</p>\n      <h1 style=\"margin:12px 0 0;color:#FFFFFF;font-size:24px;line-height:1.35;font-weight:600;\">Exploremos cómo mejorar tu negocio</h1>\n      <p style=\"margin:8px 0 0;color:#D7E5F5;font-size:14px;line-height:1.6;\">Soluciones inteligentes para empresas</p>\n    </div>\n\n    <div style=\"padding:30px 32px;\">\n      <div style=\"font-size:15px;line-height:1.85;color:#374151;white-space:pre-line;\">{{ $json.Cuerpo }}</div>\n\n      <div style=\"margin-top:28px;padding:20px;background:#F3F6FA;border-left:3px solid #2878D0;border-radius:4px;\">\n        <p style=\"margin:0;color:#142D4E;font-size:14px;font-weight:bold;\">El siguiente paso</p>\n        <p style=\"margin:8px 0 0;color:#526174;font-size:13px;line-height:1.7;\">Podemos conversar sobre tu caso, concretar tus necesidades y valorar una solución de IA o automatización adaptada a tu empresa.</p>\n      </div>\n\n      <p style=\"margin:26px 0 0;color:#374151;font-size:14px;line-height:1.7;\">Gracias por tu interés.<br><strong style=\"color:#142D4E;\">Equipo de NEXORA AI</strong></p>\n    </div>\n\n    <div style=\"padding:18px 32px;background:#F8FAFC;border-top:1px solid #E2E8F0;\">\n      <p style=\"margin:0;color:#7B8797;font-size:11px;line-height:1.7;\">NEXORA AI · Inteligencia artificial y automatización empresarial</p>\n    </div>\n\n  </div>\n</div>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        -320
+      ],
+      "id": "028239d2-ef81-4eb3-b2c3-2e64e8a23f08",
+      "name": "Send a message",
+      "webhookId": "c79249dc-7d8b-409e-8372-52a562e474d2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "o1vwXMeiJhE6WVJI",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "41074d9e-2e03-4405-b60e-902aec718821",
+              "name": "Destinatario",
+              "value": "={{ $('On form submission').item.json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "72ae9187-b3ff-4b73-bf2c-b6c04a569b16",
+              "name": "Asunto",
+              "value": "Hemos recibido tu consulta",
+              "type": "string"
+            },
+            {
+              "id": "c9b61f56-8708-40af-80d0-564f29653f04",
+              "name": "Cuerpo",
+              "value": "={{ $json.respuesta_cliente }}\n\n\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        368,
+        0
+      ],
+      "id": "80c68855-76e8-463d-976d-c228495bd0c6",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Destinatario }}",
+        "subject": "={{ $json.Asunto }}",
+        "message": "=<div style=\"margin:0;padding:32px 12px;background:#F3F6FA;font-family:Arial,Helvetica,sans-serif;color:#263445;\">\n  <div style=\"max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;\">\n\n    <div style=\"background:#142D4E;padding:28px 32px;\">\n      <p style=\"margin:0;color:#8FC2FF;font-size:12px;font-weight:bold;letter-spacing:2px;\">NEXORA AI</p>\n      <h1 style=\"margin:12px 0 0;color:#FFFFFF;font-size:24px;line-height:1.35;font-weight:600;\">Gracias por contactar con nosotros</h1>\n      <p style=\"margin:8px 0 0;color:#D7E5F5;font-size:14px;line-height:1.6;\">Inteligencia artificial aplicada a empresas</p>\n    </div>\n\n    <div style=\"padding:30px 32px;\">\n      <div style=\"font-size:15px;line-height:1.85;color:#374151;white-space:pre-line;\">{{ $json.Cuerpo }}</div>\n\n      <div style=\"margin-top:28px;padding:20px;background:#F3F6FA;border-left:3px solid #2878D0;border-radius:4px;\">\n        <p style=\"margin:0;color:#142D4E;font-size:14px;font-weight:bold;\">¿Hablamos de tu proyecto?</p>\n        <p style=\"margin:8px 0 0;color:#526174;font-size:13px;line-height:1.7;\">Si nos facilitas más detalles sobre tus necesidades, podremos orientarte mejor sobre las posibilidades de la IA y la automatización.</p>\n      </div>\n\n      <p style=\"margin:26px 0 0;color:#374151;font-size:14px;line-height:1.7;\">Un cordial saludo,<br><strong style=\"color:#142D4E;\">Equipo de NEXORA AI</strong></p>\n    </div>\n\n    <div style=\"padding:18px 32px;background:#F8FAFC;border-top:1px solid #E2E8F0;\">\n      <p style=\"margin:0;color:#7B8797;font-size:11px;line-height:1.7;\">NEXORA AI · Inteligencia artificial y automatización empresarial</p>\n    </div>\n\n  </div>\n</div>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        0
+      ],
+      "id": "7139cc11-b651-4826-9759-5fe0beb2f0ad",
+      "name": "Send a message1",
+      "webhookId": "c2891a74-e6f9-482f-8e56-2965fd545fec",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "o1vwXMeiJhE6WVJI",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "37425377-6011-412e-b2af-be96e995044e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e6472dc90a6cfc11dff7e5edcf0437acbadc6c8e1f5d2ad48e926592fcd7c7ea"
+  },
+  "nodeGroups": [],
+  "id": "Ge80YkxusgAemVuA",
+  "tags": []
+}
